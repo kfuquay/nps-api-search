@@ -27,7 +27,7 @@ function displayResults(responseJson) {
 
 function getResults(state, limit) {
     //request data from NPS API
-    fetch(`http://api.nps.gov/api/v1/parks?api_key=${api_key}&limit=${limit}&q=${state}`)
+    fetch(`https://api.nps.gov/api/v1/parks?api_key=${api_key}&limit=${limit}&q=${state}`)
         //check status of API response, if response is not ok, throw error else parse response as json
         .then(response => {
             if (response.ok) {
