@@ -1,12 +1,13 @@
 'use strict';
 
+//set variables for api key and base url
 const api_key = 'x9FPrxPyJGnGgCikcmWW9vvjMZeqWjDkGSK5qFY';
+const searchURL = 'https://api.nps.gov/api/v1/parks';
 
 function displayResults(responseJson) {
     //clear previous results and search values
     $('.results-list').empty();
-    $('#js-search-state').val('');
-    $('#js-search-number').val('');
+    $('.form').trigger("reset");
 
     //if api response contains no park data, alert user that search did not find any results
     if (responseJson.total === 0) {
@@ -17,17 +18,36 @@ function displayResults(responseJson) {
         $('.results-list').append(`
             <li><h3>Name: ${responseJson.data[i].fullName}</h3>
             <h4>Description: </h4><p>${responseJson.data[i].description}</p>
-            <h4><a href="${responseJson.data[i].url}">Website</a></h4></li><hr>
+            <h4><a href="${responseJson.data[i].url}">VISIT WEBSITE</a></h4></li>
         `)
-    }
+        }
     //show results
     $('.results').removeClass('hidden');
-}
+    }
 }
 
-function getResults(state, limit) {
+function formatQueryString(params) {
+    //iterate over params object format key and value pairs into valid url syntax
+    const queryItems = Object.keys(params)
+        .map(key => `${encodeURIComponent(key)}=${encodeURIComponent(params[key])}`)
+    return queryItems.join('&');
+}
+
+function getResults(search_term, limit) {
+    //create params object
+    const params = {
+        key: api_key,
+        stateCode: search_term,
+        limit
+    };
+
+    //send params object to formatQueryString function, get valid url formatted querystring in return
+    const queryString = formatQueryString(params);
+    //create full url by adding queryString and base URL together
+    const url = searchURL + '?' + queryString;
+
     //request data from NPS API
-    fetch(`https://api.nps.gov/api/v1/parks?api_key=${api_key}&limit=${limit}&q=${state}`)
+    fetch(url)
         //check status of API response, if response is not ok, throw error else parse response as json
         .then(response => {
             if (response.ok) {
@@ -47,9 +67,9 @@ function watchForm() {
     //watch form for submit, gather values of user input, call getResults function
     $('.form').submit(event => {
         event.preventDefault();
-        const state = $('#js-search-state').val();
+        const search_term = $('.js-search-state').val();
         const limit = $('#js-search-number').val() - 1;
-        getResults(state, limit);
+        getResults(search_term, limit);
 
     })
 }
